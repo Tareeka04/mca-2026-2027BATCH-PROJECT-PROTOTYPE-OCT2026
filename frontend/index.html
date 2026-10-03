@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MealSolver - One Household. Different Needs. One Meal.</title>
+  <meta name="description" content="AI-powered Indian kitchen companion solving 'One Household. Different Needs. One Meal.' alongside pantry matching, cravings, and leftover transformations.">
+  <meta name="theme-color" content="#FF6B35">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍲</text></svg>">
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Navigation Bar -->
+    <header class="navbar">
+      <div class="brand" onclick="App.switchTab('household')">
+        <div class="brand-icon">🍲</div>
+        <div>
+          <div class="brand-title">MealSolver</div>
+          <div class="brand-subtitle">One Household • One Meal</div>
+        </div>
+      </div>
+
+      <div class="nav-actions">
+        <button class="cart-btn" id="nav-cart-btn">
+          <span>🛒 Smart Grocery List</span>
+          <span class="badge-count" id="cart-badge">0</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Mode Navigation Tabs -->
+    <nav class="modes-bar" role="tablist">
+      <button class="mode-tab active" data-tab="household" id="tab-btn-household">
+        👨‍👩‍👧‍👦 Household Solver
+      </button>
+      <button class="mode-tab" data-tab="pantry" id="tab-btn-pantry">
+        🥫 Pantry Matcher
+      </button>
+      <button class="mode-tab" data-tab="craving" id="tab-btn-craving">
+        🌶️ Craving & Mood
+      </button>
+      <button class="mode-tab leftovers" data-tab="leftovers" id="tab-btn-leftovers">
+        ♻️ Leftover Magician
+      </button>
+      <button class="mode-tab scanner" data-tab="scanner" id="tab-btn-scanner">
+        📷 Fridge Scanner
+      </button>
+      <button class="mode-tab" data-tab="catalog" id="tab-btn-catalog">
+        📖 Explore All (120+)
+      </button>
+    </nav>
+
+    <!-- SECTION 1: HOUSEHOLD MEAL SOLVER (MAIN PRIMARY FEATURE) -->
+    <main id="tab-household" class="tab-content active">
+      <!-- Hero Banner -->
+      <section class="household-hero-banner">
+        <div class="hero-tag">✨ Flagship Indian Family Solver</div>
+        <h1 class="hero-title" style="font-size: 34px;">Plan One Meal For The Whole Household</h1>
+        <p class="hero-desc" style="font-size: 16px; color: #FFD8A8; font-weight: 600; margin-bottom: 6px;">
+          "Different needs. One kitchen. One meal."
+        </p>
+        <p class="hero-desc" style="font-size: 14px; max-width: 680px;">
+          Stop cooking 3 different pots! Configure your family members' diets, spice limits, allergens, and texture needs. MealSolver finds <b>ONE common Indian meal</b> that satisfies everyone with effortless table customization.
+        </p>
+      </section>
+
+      <!-- Household Setup Panel -->
+      <section class="card-panel">
+        <!-- 1-Click Quick Presets -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+          <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">
+            ⚡ 1-Click Indian Household Templates:
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="btn-secondary" style="font-size: 12px; padding: 4px 10px;" onclick="HouseholdModule.loadPreset('three_gen')">👨‍👩‍👧‍👦 3-Gen Joint Family</button>
+            <button class="btn-secondary" style="font-size: 12px; padding: 4px 10px;" onclick="HouseholdModule.loadPreset('jain_elder')">🧓 Elder Care + Jain</button>
+            <button class="btn-secondary" style="font-size: 12px; padding: 4px 10px;" onclick="HouseholdModule.loadPreset('working_couple')">👫 Spicy + Vegan Couple</button>
+          </div>
+        </div>
+
+        <!-- Household Members Section Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin: 18px 0 12px 0;">
+          <div>
+            <h3 style="font-size: 18px; color: #fff;">Your Household Family Members</h3>
+            <span style="font-size: 13px; color: var(--text-muted);" id="total-members-display">4 Family Members</span>
+          </div>
+          <button class="btn-primary" id="add-member-btn" style="padding: 8px 16px; font-size: 13px;">
+            + Add Member
+          </button>
+        </div>
+
+        <!-- Family Member Cards Grid -->
+        <div class="household-members-grid" id="household-members-grid"></div>
+
+        <!-- Kitchen Pantry & Constraints -->
+        <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-light);">
+          <div style="font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 10px;">
+            🥫 Available Kitchen Ingredients (Optional - Leave blank to search all dishes):
+          </div>
+
+          <!-- Quick Chips -->
+          <div class="chip-container">
+            <div class="chip household-quick-chip selected" data-name="Rice" onclick="HouseholdModule.togglePantryChip('Rice')">🍚 Rice</div>
+            <div class="chip household-quick-chip selected" data-name="Moong Dal" onclick="HouseholdModule.togglePantryChip('Moong Dal')">🍲 Moong Dal</div>
+            <div class="chip household-quick-chip" data-name="Toor Dal" onclick="HouseholdModule.togglePantryChip('Toor Dal')">🍲 Toor Dal</div>
+            <div class="chip household-quick-chip selected" data-name="Potato" onclick="HouseholdModule.togglePantryChip('Potato')">🥔 Potato</div>
+            <div class="chip household-quick-chip selected" data-name="Tomato" onclick="HouseholdModule.togglePantryChip('Tomato')">🍅 Tomato</div>
+            <div class="chip household-quick-chip" data-name="Onion" onclick="HouseholdModule.togglePantryChip('Onion')">🧅 Onion</div>
+            <div class="chip household-quick-chip" data-name="Paneer" onclick="HouseholdModule.togglePantryChip('Paneer')">🧀 Paneer</div>
+            <div class="chip household-quick-chip" data-name="Poha" onclick="HouseholdModule.togglePantryChip('Poha')">🥣 Poha</div>
+            <div class="chip household-quick-chip selected" data-name="Ghee" onclick="HouseholdModule.togglePantryChip('Ghee')">🧈 Ghee</div>
+            <div class="chip household-quick-chip selected" data-name="Turmeric" onclick="HouseholdModule.togglePantryChip('Turmeric')">🌿 Turmeric</div>
+            <div class="chip household-quick-chip selected" data-name="Cumin Seeds" onclick="HouseholdModule.togglePantryChip('Cumin Seeds')">🌱 Cumin</div>
+            <div class="chip household-quick-chip" data-name="Sprouted Matki" onclick="HouseholdModule.togglePantryChip('Sprouted Matki')">🌱 Sprouts</div>
+          </div>
+
+          <!-- Custom Input -->
+          <div class="input-group-custom" style="margin-bottom: 12px;">
+            <input type="text" id="household-pantry-input" class="text-input" placeholder="Add any ingredient (e.g. carrot, palak, peas, goda masala)..." list="ingredients-datalist">
+            <button id="household-pantry-add-btn" class="btn-secondary">+ Add Item</button>
+          </div>
+
+          <div class="pantry-pills-box" id="household-pills-container" style="min-height: 48px; margin-bottom: 20px;"></div>
+
+          <!-- Household defaults -->
+          <div class="filter-bar" style="margin-top: 10px;">
+            <div class="filter-group">
+              <label class="filter-label" for="household-type">Household Type</label>
+              <select id="household-type" class="select-custom">
+                <option value="family" selected>Family</option>
+                <option value="student">Student / Bachelor</option>
+                <option value="working_professional">Working Professional</option>
+                <option value="couple">Couple</option>
+                <option value="senior_friendly">Senior-friendly Household</option>
+                <option value="shared_flat">Shared Flat / Hostel</option>
+              </select>
+            </div>
+            <div class="filter-group" style="justify-content:flex-end;">
+              <label class="filter-label">Preparation Preference</label>
+              <label style="display:flex;align-items:center;gap:8px;color:#fff;font-size:13px;margin-top:8px;">
+                <input type="checkbox" id="household-one-pot" style="accent-color:var(--primary);"> 🍲 Prioritize genuine one-pot meals
+              </label>
+            </div>
+          </div>
+
+          <!-- Constraints -->
+          <div class="filter-bar" style="margin-top: 10px;">
+            <div class="filter-group">
+              <label class="filter-label" for="household-servings-input">Household Servings</label>
+              <input type="number" id="household-servings-input" class="text-input" style="padding: 8px 12px;" min="1" max="24" value="4">
+            </div>
+
+            <div class="filter-group">
+              <label class="filter-label" for="household-max-time">Max Total Cooking Time</label>
+              <select id="household-max-time" class="select-custom">
+                <option value="">Any Time</option>
+                <option value="20">⚡ Under 20 mins (Super Fast)</option>
+                <option value="35" selected>⏱️ Under 35 mins</option>
+                <option value="50">🍲 Under 50 mins</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label class="filter-label" for="household-meal">Meal Course</label>
+              <select id="household-meal" class="select-custom">
+                <option value="All">All Meals (Lunch / Dinner)</option>
+                <option value="Dinner" selected>Dinner</option>
+                <option value="Lunch">Lunch</option>
+                <option value="Breakfast">Breakfast</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label class="filter-label" for="household-cuisine">Regional Specialty</label>
+              <select id="household-cuisine" class="select-custom">
+                <option value="All">All Indian Cuisines</option>
+                <option value="Maharashtrian">🚩 Maharashtrian</option>
+                <option value="North Indian">🫓 North Indian</option>
+                <option value="South Indian">🥥 South Indian</option>
+                <option value="Gujarati">🫔 Gujarati</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Main CTA Button -->
+          <div style="text-align: center; margin-top: 24px;">
+            <button class="btn-primary" id="household-solve-btn" style="padding: 16px 36px; font-size: 17px; width: 100%; max-width: 450px; justify-content: center; box-shadow: 0 6px 20px var(--primary-glow);">
+              🚀 PLAN ONE MEAL FOR THE WHOLE HOUSEHOLD
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Solution Section -->
+      <section>
+        <div id="household-best-meal-container"></div>
+        <div id="household-runnerup-container"></div>
+      </section>
+    </main>
+
+    <!-- SECTION 2: PANTRY SOLVER -->
+    <main id="tab-pantry" class="tab-content">
+      <section class="hero-box">
+        <div class="hero-tag">✨ Zero-Waste Pantry Engine</div>
+        <h1 class="hero-title">What can I cook with what I have?</h1>
+        <p class="hero-desc">Select ingredients present in your kitchen. We'll find recipes you can make right now, calculate gaps, and suggest authentic Indian substitutes.</p>
+      </section>
+
+      <section class="card-panel">
+        <!-- Quick Add Chips -->
+        <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px;">
+          ⚡ Quick Select Common Kitchen Staples:
+        </div>
+        <div class="chip-container">
+          <div class="chip pantry-quick-chip selected" data-name="Onion" onclick="PantryModule.toggleQuickChip('Onion')">🧅 Onion (Kanda)</div>
+          <div class="chip pantry-quick-chip selected" data-name="Potato" onclick="PantryModule.toggleQuickChip('Potato')">🥔 Potato (Batata)</div>
+          <div class="chip pantry-quick-chip" data-name="Tomato" onclick="PantryModule.toggleQuickChip('Tomato')">🍅 Tomato</div>
+          <div class="chip pantry-quick-chip selected" data-name="Green Chillies" onclick="PantryModule.toggleQuickChip('Green Chillies')">🌶️ Green Chillies</div>
+          <div class="chip pantry-quick-chip" data-name="Ginger" onclick="PantryModule.toggleQuickChip('Ginger')">🫚 Ginger (Ale)</div>
+          <div class="chip pantry-quick-chip" data-name="Garlic" onclick="PantryModule.toggleQuickChip('Garlic')">🧄 Garlic (Lasun)</div>
+          <div class="chip pantry-quick-chip selected" data-name="Poha" onclick="PantryModule.toggleQuickChip('Poha')">🥣 Poha (Flattened Rice)</div>
+          <div class="chip pantry-quick-chip" data-name="Besan" onclick="PantryModule.toggleQuickChip('Besan')">🌾 Besan (Gram Flour)</div>
+          <div class="chip pantry-quick-chip" data-name="Toor Dal" onclick="PantryModule.toggleQuickChip('Toor Dal')">🍲 Toor Dal (Varan)</div>
+          <div class="chip pantry-quick-chip selected" data-name="Peanuts" onclick="PantryModule.toggleQuickChip('Peanuts')">🥜 Peanuts (Shengdana)</div>
+          <div class="chip pantry-quick-chip" data-name="Paneer" onclick="PantryModule.toggleQuickChip('Paneer')">🧀 Paneer</div>
+          <div class="chip pantry-quick-chip" data-name="Curd" onclick="PantryModule.toggleQuickChip('Curd')">🥛 Curd (Dahi)</div>
+          <div class="chip pantry-quick-chip" data-name="Fresh Coconut" onclick="PantryModule.toggleQuickChip('Fresh Coconut')">🥥 Fresh Coconut</div>
+          <div class="chip pantry-quick-chip" data-name="Spinach" onclick="PantryModule.toggleQuickChip('Spinach')">🥬 Spinach (Palak)</div>
+          <div class="chip pantry-quick-chip" data-name="Sprouted Matki" onclick="PantryModule.toggleQuickChip('Sprouted Matki')">🌱 Sprouted Matki</div>
+          <div class="chip pantry-quick-chip" data-name="Wheat Flour" onclick="PantryModule.toggleQuickChip('Wheat Flour')">🫓 Wheat Flour (Atta)</div>
+        </div>
+
+        <!-- Custom Search Input with Autocomplete -->
+        <div class="input-group-custom">
+          <input type="text" id="pantry-input" class="text-input" placeholder="Type any ingredient or Hinglish/Marathi name (e.g. kanda, batata, kokum, goda masala)..." list="ingredients-datalist">
+          <datalist id="ingredients-datalist"></datalist>
+          <button id="pantry-add-btn" class="btn-primary">+ Add Item</button>
+        </div>
+
+        <!-- Selected Pantry Items Container -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <div style="font-size: 13px; font-weight: 700; color: #fff;">Currently In Your Kitchen:</div>
+          <button id="pantry-clear-btn" style="background: transparent; border: none; color: var(--danger); font-size: 12px; font-weight: 600; cursor: pointer;">Clear All</button>
+        </div>
+        <div class="pantry-pills-box" id="pantry-pills-container"></div>
+
+        <!-- Constraint Filter Bar -->
+        <div class="filter-bar">
+          <div class="filter-group">
+            <label class="filter-label" for="pantry-diet">Diet Preference</label>
+            <select id="pantry-diet" class="select-custom">
+              <option value="All">All Diets</option>
+              <option value="Vegetarian" selected>Pure Vegetarian</option>
+              <option value="Vegan">100% Vegan</option>
+              <option value="Jain">Jain Friendly</option>
+              <option value="Gluten-Free">Gluten-Free</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-label" for="pantry-time">Max Cooking Time</label>
+            <select id="pantry-time" class="select-custom">
+              <option value="">Any Time</option>
+              <option value="15">⚡ Under 15 mins</option>
+              <option value="25">⏱️ Under 25 mins</option>
+              <option value="40">🍲 Under 40 mins</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-label" for="pantry-cuisine">Regional Cuisine</label>
+            <select id="pantry-cuisine" class="select-custom">
+              <option value="All">All Regions</option>
+              <option value="Maharashtrian">🚩 Maharashtrian</option>
+              <option value="North Indian">🫓 North Indian / Punjabi</option>
+              <option value="South Indian">🥥 South Indian</option>
+              <option value="Gujarati">🫔 Gujarati</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-label" for="pantry-meal">Meal Type</label>
+            <select id="pantry-meal" class="select-custom">
+              <option value="All">All Meal Types</option>
+              <option value="Breakfast">Breakfast</option>
+              <option value="Lunch">Lunch</option>
+              <option value="Dinner">Dinner</option>
+              <option value="Snack">Chai Time Snacks</option>
+              <option value="Fast / Upwas">Upwas / Fasting</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- Results Grid -->
+      <section>
+        <div class="results-header">
+          <h2>Recipes You Can Cook</h2>
+          <div class="results-count" id="pantry-match-count">Calculating matches...</div>
+        </div>
+        <div class="results-grid" id="pantry-results-grid"></div>
+      </section>
+    </main>
+
+    <!-- SECTION 3: CRAVING & MOOD SOLVER -->
+    <main id="tab-craving" class="tab-content">
+      <section class="hero-box">
+        <div class="hero-tag">🌶️ Semantic Taste & Mood Engine</div>
+        <h1 class="hero-title">What should I cook based on my craving?</h1>
+        <p class="hero-desc">Describe what you feel like eating in plain English or Hinglish, fine-tune taste sliders, and let our flavor engine find your perfect meal.</p>
+      </section>
+
+      <section class="card-panel">
+        <!-- Natural Language Craving Search -->
+        <div class="input-group-custom">
+          <input type="text" id="craving-search-input" class="text-input" placeholder="e.g. 'Spicy comforting dal for monsoon evening' or 'Sweet festive dessert with pure ghee'...">
+          <button id="craving-search-btn" class="btn-primary">Find Matches</button>
+        </div>
+
+        <!-- Quick Craving Presets -->
+        <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">
+          💡 Popular Cravings:
+        </div>
+        <div class="chip-container">
+          <span class="chip" onclick="CravingModule.setPresetQuery('Spicy Maharashtrian street food')">🌶️ Spicy Street Food</span>
+          <span class="chip" onclick="CravingModule.setPresetQuery('Comforting hot khichdi or soothing soup')">🥣 Comforting Khichdi</span>
+          <span class="chip" onclick="CravingModule.setPresetQuery('Crispy tea-time snacks with chai')">☕ Crispy Chai Snacks</span>
+          <span class="chip" onclick="CravingModule.setPresetQuery('Sweet festive dessert with ghee and cardamom')">🍯 Festive Sweet</span>
+          <span class="chip" onclick="CravingModule.setPresetQuery('High protein wholesome sprouts or paneer')">🥗 High Protein Wholesome</span>
+          <span class="chip" onclick="CravingModule.setPresetQuery('Upwas fasting sabudana snack')">🪔 Upwas / Fasting Dish</span>
+        </div>
+
+        <!-- Mood Tags -->
+        <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin: 16px 0 8px 0;">
+          🎭 Select Your Mood:
+        </div>
+        <div class="chip-container">
+          <span class="chip craving-mood-chip" data-mood="comforting" onclick="CravingModule.selectMood('comforting')">🥣 Comfort Food</span>
+          <span class="chip craving-mood-chip" data-mood="quick" onclick="CravingModule.selectMood('quick')">⚡ Quick (< 20 mins)</span>
+          <span class="chip craving-mood-chip" data-mood="spicy" onclick="CravingModule.selectMood('spicy')">🌶️ Fiery Street Style</span>
+          <span class="chip craving-mood-chip" data-mood="healthy" onclick="CravingModule.selectMood('healthy')">🥗 Wholesome & Balanced</span>
+          <span class="chip craving-mood-chip" data-mood="monsoon" onclick="CravingModule.selectMood('monsoon')">🌧️ Monsoon Warmth</span>
+          <span class="chip craving-mood-chip" data-mood="festive" onclick="CravingModule.selectMood('festive')">✨ Festive & Royal</span>
+          <span class="chip craving-mood-chip" data-mood="upwas" onclick="CravingModule.selectMood('upwas')">🪔 Upwas / Fasting</span>
+        </div>
+
+        <!-- 4 Taste Sliders -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+          <div style="font-size: 13px; font-weight: 700; color: #fff;">Fine-Tune Taste & Flavor Profile:</div>
+          <button id="reset-sliders-btn" style="background: transparent; border: none; color: var(--text-muted); font-size: 12px; cursor: pointer;">Reset Sliders</button>
+        </div>
+
+        <div class="taste-slider-grid">
+          <div class="taste-slider-item">
+            <div class="slider-header">
+              <span>🌶️ Spiciness</span>
+              <span id="slider-spicy-val" style="color: var(--primary); font-weight: 800;">2</span>/5
+            </div>
+            <input type="range" id="slider-spicy" class="slider-custom" min="0" max="5" value="2">
+          </div>
+
+          <div class="taste-slider-item">
+            <div class="slider-header">
+              <span>🍋 Tanginess / Sour</span>
+              <span id="slider-tangy-val" style="color: var(--accent-turmeric); font-weight: 800;">2</span>/5
+            </div>
+            <input type="range" id="slider-tangy" class="slider-custom" min="0" max="5" value="2">
+          </div>
+
+          <div class="taste-slider-item">
+            <div class="slider-header">
+              <span>🍯 Sweetness</span>
+              <span id="slider-sweet-val" style="color: var(--accent-gold); font-weight: 800;">1</span>/5
+            </div>
+            <input type="range" id="slider-sweet" class="slider-custom" min="0" max="5" value="1">
+          </div>
+
+          <div class="taste-slider-item">
+            <div class="slider-header">
+              <span>🥣 Comfort / Warmth</span>
+              <span id="slider-comfort-val" style="color: #4ADE80; font-weight: 800;">3</span>/5
+            </div>
+            <input type="range" id="slider-comfort" class="slider-custom" min="0" max="5" value="3">
+          </div>
+        </div>
+
+        <!-- Constraint Filter Bar -->
+        <div class="filter-bar">
+          <div class="filter-group">
+            <label class="filter-label" for="craving-diet">Diet</label>
+            <select id="craving-diet" class="select-custom" onchange="CravingModule.solve()">
+              <option value="All">All Diets</option>
+              <option value="Vegetarian" selected>Vegetarian</option>
+              <option value="Vegan">Vegan</option>
+              <option value="Jain">Jain Friendly</option>
+              <option value="Gluten-Free">Gluten-Free</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-label" for="craving-time">Max Time</label>
+            <select id="craving-time" class="select-custom" onchange="CravingModule.solve()">
+              <option value="">Any Time</option>
+              <option value="20">⚡ Under 20 mins</option>
+              <option value="35">⏱️ Under 35 mins</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-label" for="craving-cuisine">Cuisine</label>
+            <select id="craving-cuisine" class="select-custom" onchange="CravingModule.solve()">
+              <option value="All">All Cuisines</option>
+              <option value="Maharashtrian">🚩 Maharashtrian</option>
+              <option value="North Indian">🫓 North Indian</option>
+              <option value="South Indian">🥥 South Indian</option>
+              <option value="Gujarati">🫔 Gujarati</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- Results Grid -->
+      <section>
+        <div class="results-header">
+          <h2>Dishes Matching Your Craving</h2>
+          <div class="results-count" id="craving-match-count">Finding recommendations...</div>
+        </div>
+        <div class="results-grid" id="craving-results-grid"></div>
+      </section>
+    </main>
+
+    <!-- SECTION 4: LEFTOVER MAGICIAN -->
+    <main id="tab-leftovers" class="tab-content">
+      <section class="hero-box">
+        <div class="hero-tag" style="background: rgba(42, 157, 143, 0.15); color: #4ADE80; border-color: rgba(42, 157, 143, 0.4);">
+          ♻️ Desi Leftover Transformation Engine
+        </div>
+        <h1 class="hero-title">What can I make with my leftovers?</h1>
+        <p class="hero-desc">Don't let yesterday's rice or stale rotis go to waste! Discover authentic Indian dishes designed specifically to transform leftovers into restaurant-worthy delicacies.</p>
+      </section>
+
+      <!-- Leftover Staples Selector -->
+      <div class="leftover-grid">
+        <div class="leftover-choice-card selected" data-staple="cooked rice">
+          <div class="leftover-icon">🍚</div>
+          <div class="leftover-info">
+            <h4>Cooked Rice (Bhaat)</h4>
+            <p>Phodnicha Bhaat, Curd Rice, Tawa Pulao, Lemon Rice, Rice Cutlets</p>
+          </div>
+        </div>
+
+        <div class="leftover-choice-card" data-staple="stale roti">
+          <div class="leftover-icon">🫓</div>
+          <div class="leftover-info">
+            <h4>Stale Chapati / Roti (Poli)</h4>
+            <p>Phodnichi Poli, Gul-Poli Ladoo, Desi Frankie, Roti Noodles</p>
+          </div>
+        </div>
+
+        <div class="leftover-choice-card" data-staple="leftover dal">
+          <div class="leftover-icon">🍲</div>
+          <div class="leftover-info">
+            <h4>Leftover Dal (Varan)</h4>
+            <p>Spiced Dal Paratha, Chakolya (Varan Phal), Tadka Dal Khichdi</p>
+          </div>
+        </div>
+
+        <div class="leftover-choice-card" data-staple="boiled potatoes">
+          <div class="leftover-icon">🥔</div>
+          <div class="leftover-info">
+            <h4>Boiled Potatoes (Batate)</h4>
+            <p>Batata Vada, Sukhi Batata Bhaji, Aloo Tikki, Batata Poha</p>
+          </div>
+        </div>
+
+        <div class="leftover-choice-card" data-staple="sour curd">
+          <div class="leftover-icon">🥛</div>
+          <div class="leftover-info">
+            <h4>Sour Curd / Dahi (Taak)</h4>
+            <p>Maharashtrian Kadhi, Dahi Tadka, Instant Rava Dhokla</p>
+          </div>
+        </div>
+
+        <div class="leftover-choice-card" data-staple="leftover bread">
+          <div class="leftover-icon">🍞</div>
+          <div class="leftover-info">
+            <h4>Leftover Bread / Pav</h4>
+            <p>Phodnicha Bread (Upma), Bread Pakora, Shahi Tukda</p>
+          </div>
+        </div>
+
+        <div class="leftover-choice-card" data-staple="leftover sabzi">
+          <div class="leftover-icon">🥘</div>
+          <div class="leftover-info">
+            <h4>Leftover Dry Sabzi</h4>
+            <p>Stuffed Sabzi Paratha, Masala Toast Sandwich, Veg Cutlet</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <section class="card-panel">
+        <div class="filter-bar" style="border: none; padding-top: 0; margin-top: 0;">
+          <div class="filter-group">
+            <label class="filter-label" for="leftover-diet">Diet</label>
+            <select id="leftover-diet" class="select-custom">
+              <option value="All">All Diets</option>
+              <option value="Vegetarian" selected>Vegetarian</option>
+              <option value="Vegan">Vegan</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-label" for="leftover-time">Speed</label>
+            <select id="leftover-time" class="select-custom">
+              <option value="">Any Prep Time</option>
+              <option value="12">⚡ Under 12 mins (Ultra Fast)</option>
+              <option value="20">⏱️ Under 20 mins</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- Results Grid -->
+      <section>
+        <div class="results-header">
+          <h2>Transformative Leftover Creations</h2>
+          <div class="results-count" id="leftover-match-count">Calculating transformations...</div>
+        </div>
+        <div class="results-grid" id="leftover-results-grid"></div>
+      </section>
+    </main>
+
+    <!-- SECTION 5: FRIDGE SCANNER -->
+    <main id="tab-scanner" class="tab-content">
+      <section class="hero-box">
+        <div class="hero-tag" style="background: rgba(139, 92, 246, 0.15); color: #C4B5FD; border-color: rgba(139, 92, 246, 0.4);">
+          📷 Local Vision & Image Recognition
+        </div>
+        <h1 class="hero-title">What can I make from ingredients in my fridge?</h1>
+        <p class="hero-desc">Upload or snap a photo of your fridge shelf or vegetable basket. Our offline computer vision pipeline identifies ingredients and instantly passes them to the Pantry Solver.</p>
+      </section>
+
+      <section class="card-panel">
+        <!-- Upload Dropzone -->
+        <div class="upload-dropzone" id="scanner-dropzone">
+          <input type="file" id="scanner-file-input" accept="image/*" style="display: none;">
+          <div class="scanner-icon">📸</div>
+          <h3 style="font-size: 18px; margin-bottom: 6px;">Drop fridge photo here or click to browse</h3>
+          <p style="color: var(--text-muted); font-size: 13px;">Supports PNG, JPG, JPEG, WEBP. Analyzed 100% locally on your machine with 0 external API cost.</p>
+        </div>
+
+        <!-- Sample Photos for Instant Demo -->
+        <div style="margin-top: 18px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+          <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Or try instant test samples:</span>
+          <button class="btn-secondary" style="font-size: 12px; padding: 5px 12px;" onclick="ScannerModule.loadSample('veggies')">🍅 Veggie Basket (Tomatoes, Greens, Carrots)</button>
+          <button class="btn-secondary" style="font-size: 12px; padding: 5px 12px;" onclick="ScannerModule.loadSample('dairy')">🧀 Dairy Shelf (Paneer, Lemon, Curd)</button>
+          <button class="btn-secondary" style="font-size: 12px; padding: 5px 12px;" onclick="ScannerModule.loadSample('brinjal')">🍆 Purple Brinjals & Potatoes</button>
+        </div>
+
+        <!-- Image Preview & Detected Tags Box -->
+        <div id="scanner-results-box" style="display: none; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-light);">
+          <div style="display: grid; grid-template-columns: 180px 1fr; gap: 20px; align-items: start;">
+            <!-- Preview Thumbnail -->
+            <div id="scanner-preview-box" style="display: none;">
+              <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px;">Analyzed Image:</div>
+              <img id="scanner-preview-img" alt="Fridge Preview" style="width: 100%; height: 140px; object-fit: cover; border-radius: var(--radius-md); border: 1px solid var(--border-light);">
+            </div>
+
+            <!-- Detected Tags -->
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <div style="font-size: 14px; font-weight: 700; color: #fff;">Detected Ingredients (Tap &times; to edit):</div>
+              </div>
+              <div class="chip-container" id="scanner-tags-container"></div>
+
+              <div style="margin-top: 16px;">
+                <button class="btn-primary" id="transfer-to-pantry-btn" style="background: linear-gradient(135deg, #8B5CF6, #6D28D9);">
+                  🥫 Find Meals with Detected Ingredients →
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- SECTION 6: EXPLORE ALL RECIPES -->
+    <main id="tab-catalog" class="tab-content">
+      <section class="hero-box">
+        <div class="hero-tag">📖 Authentic Recipe Vault</div>
+        <h1 class="hero-title">Explore Indian Recipes</h1>
+        <p class="hero-desc">Browse our curated collection of authentic recipes with rich representation of Maharashtrian specialties, North Indian, South Indian, and regional classics.</p>
+      </section>
+
+      <section class="card-panel">
+        <!-- Search -->
+        <div class="input-group-custom">
+          <input type="text" id="catalog-search-input" class="text-input" placeholder="Search by recipe name, ingredient, flavor, or cuisine...">
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-bar" style="border: none; padding-top: 0; margin-top: 0;">
+          <div class="filter-group">
+            <label class="filter-label" for="catalog-cuisine">Cuisine</label>
+            <select id="catalog-cuisine" class="select-custom">
+              <option value="All">All Cuisines</option>
+              <option value="Maharashtrian">🚩 Maharashtrian</option>
+              <option value="North Indian">🫓 North Indian</option>
+              <option value="South Indian">🥥 South Indian</option>
+              <option value="Gujarati">🫔 Gujarati</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-label" for="catalog-diet">Diet</label>
+            <select id="catalog-diet" class="select-custom">
+              <option value="All">All Diets</option>
+              <option value="Vegetarian">Pure Vegetarian</option>
+              <option value="Vegan">Vegan</option>
+              <option value="Jain">Jain Friendly</option>
+              <option value="Gluten-Free">Gluten-Free</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label class="filter-label" for="catalog-meal">Meal Course</label>
+            <select id="catalog-meal" class="select-custom">
+              <option value="All">All Meals</option>
+              <option value="Breakfast">Breakfast</option>
+              <option value="Lunch">Lunch</option>
+              <option value="Dinner">Dinner</option>
+              <option value="Snack">Snacks</option>
+              <option value="Dessert">Desserts & Sweets</option>
+              <option value="Fast / Upwas">Upwas / Fasting</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- Results Grid -->
+      <section>
+        <div class="results-header">
+          <h2>All Available Recipes</h2>
+          <div class="results-count" id="catalog-total-count">Loading recipe catalog...</div>
+        </div>
+        <div class="results-grid" id="catalog-results-grid"></div>
+      </section>
+    </main>
+
+  </div>
+
+  <!-- ADD / EDIT FAMILY MEMBER MODAL -->
+  <div class="modal-backdrop" id="member-modal-backdrop">
+    <div class="modal-content" style="max-width: 580px;">
+      <div class="modal-header">
+        <h2 style="font-size: 20px; color: #fff;">Family Member Food Profile</h2>
+        <button class="modal-close" id="member-modal-close" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="member-form">
+          <input type="hidden" id="member-form-id">
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+            <div class="filter-group">
+              <label class="filter-label" for="member-form-name">Name / Nickname</label>
+              <input type="text" id="member-form-name" class="text-input" placeholder="e.g. Mom, Aarav, Dadi" required>
+            </div>
+            <div class="filter-group">
+              <label class="filter-label" for="member-form-role">Role / Avatar</label>
+              <select id="member-form-role" class="select-custom">
+                <option value="Mother">👩 Mother / Mom</option>
+                <option value="Father">👨 Father / Dad</option>
+                <option value="Child">👧 Child / Kid</option>
+                <option value="Grandmother">👵 Grandmother / Dadi</option>
+                <option value="Grandfather">👴 Grandfather / Dada</option>
+                <option value="Partner">👫 Partner / Spouse</option>
+                <option value="Self">🙋 Self</option>
+                <option value="Family Member">👤 Family Member</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+            <div class="filter-group">
+              <label class="filter-label" for="member-form-diet">Strict Diet</label>
+              <select id="member-form-diet" class="select-custom">
+                <option value="Vegetarian">Pure Vegetarian</option>
+                <option value="Vegan">100% Plant Vegan</option>
+                <option value="Jain">Jain Friendly (No Root Veg)</option>
+                <option value="Gluten-Free">Gluten-Free</option>
+                <option value="Any">Any Diet</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label class="filter-label" for="member-form-spice">Spice Tolerance</label>
+              <select id="member-form-spice" class="select-custom">
+                <option value="Mild">Mild (Non-spicy / Kids)</option>
+                <option value="Low">Low Spice</option>
+                <option value="Medium" selected>Medium Spice</option>
+                <option value="Spicy">Spicy (Street heat)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="filter-group" style="margin-bottom: 16px;">
+            <label class="filter-label" for="member-form-custom">Other Food Constraints</label>
+            <input type="text" id="member-form-custom" class="text-input" placeholder="e.g. high salt, no ghee, no butter">
+            <span style="font-size: 11px; color: var(--text-dim); margin-top: 2px;">Use “no X” / “without X” for strict exclusions, or “high/extra salt” for a positive requirement.</span>
+          </div>
+
+          <div class="filter-group" style="margin-bottom: 16px;">
+            <label class="filter-label" for="member-form-avoid">Avoided / Disliked Ingredients (Separated by commas)</label>
+            <input type="text" id="member-form-avoid" class="text-input" placeholder="e.g. peanuts, onion, garlic, capsicum, brinjal">
+            <span style="font-size: 11px; color: var(--text-dim); margin-top: 2px;">MealSolver will guarantee the recipe does not contain these items.</span>
+          </div>
+
+          <div class="filter-group" style="margin-bottom: 20px;">
+            <label class="filter-label">Special Needs & Preferences (Select all that apply)</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px;">
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #fff; cursor: pointer;">
+                <input type="checkbox" id="pref-soft_food" style="accent-color: var(--primary);"> 🥣 Soft / Easy to Chew
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #fff; cursor: pointer;">
+                <input type="checkbox" id="pref-high_protein" style="accent-color: var(--primary);"> 💪 High Protein
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #fff; cursor: pointer;">
+                <input type="checkbox" id="pref-kid_friendly" style="accent-color: var(--primary);"> 🧸 Kid-Friendly Flavors
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #fff; cursor: pointer;">
+                <input type="checkbox" id="pref-easy_digest" style="accent-color: var(--primary);"> 🌿 Light & Easy to Digest
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #fff; cursor: pointer;">
+                <input type="checkbox" id="pref-quick" style="accent-color: var(--primary);"> ⚡ Quick Meal
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #fff; cursor: pointer;">
+                <input type="checkbox" id="pref-one_pot" style="accent-color: var(--primary);"> 🍲 One-Pot Meal
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #fff; cursor: pointer;">
+                <input type="checkbox" id="pref-healthy" style="accent-color: var(--primary);"> 🥗 Lighter / Balanced
+              </label>
+            </div>
+            <span style="font-size: 11px; color: var(--text-dim); margin-top: 8px;">Note: Dietary options reflect culinary preferences and are not medical advice.</span>
+          </div>
+
+          <div style="display: flex; gap: 10px;">
+            <button type="submit" class="btn-primary" style="flex: 1; justify-content: center;">Save Family Profile</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECIPE DETAIL & INTERACTIVE COOKING MODAL -->
+  <div class="modal-backdrop" id="recipe-modal-backdrop">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="recipe-modal-title" style="font-size: 22px; color: #fff;">Recipe Details</h2>
+        <button class="modal-close" id="recipe-modal-close" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body" id="recipe-modal-body"></div>
+    </div>
+  </div>
+
+  <!-- SMART GROCERY SHOPPING LIST MODAL -->
+  <div class="modal-backdrop" id="cart-modal-backdrop">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 24px;">🛒</span>
+          <h2 style="font-size: 20px; color: #fff;">Smart Grocery Shopping List</h2>
+        </div>
+        <button class="modal-close" id="cart-modal-close" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <p style="font-size: 13px; color: var(--text-muted);">Aggregated missing ingredients from recipes you want to cook.</p>
+          <button id="cart-clear-btn" style="background: transparent; border: none; color: var(--danger); font-size: 12px; font-weight: 600; cursor: pointer;">Clear All</button>
+        </div>
+
+        <div id="cart-items-container"></div>
+
+        <div style="margin-top: 24px; display: flex; gap: 10px;">
+          <button class="btn-primary" id="cart-copy-btn" style="flex: 1; justify-content: center; background: linear-gradient(135deg, #10B981, #059669);">
+            📋 Copy for WhatsApp / Print
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Modules -->
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/household-constraints.js"></script>
+  <script src="/static/js/recipe-visuals.js"></script>
+  <script src="/static/js/household.js"></script>
+  <script src="/static/js/pantry.js"></script>
+  <script src="/static/js/craving.js"></script>
+  <script src="/static/js/leftovers.js"></script>
+  <script src="/static/js/scanner.js"></script>
+  <script src="/static/js/recipe-modal.js"></script>
+  <script src="/static/js/shopping-list.js"></script>
+  <script src="/static/js/app.js"></script>
+
+</body>
+</html>
